@@ -9,7 +9,9 @@ use App\Models\FurnitureModel;
 use App\Models\WoodType;
 use App\Models\Finish;
 use App\Services\FurnitureOrderService;
-use Illuminate\Http\JsonResponse;
+use Illuminate\Http\RedirectResponse;
+use Inertia\Inertia;
+use Inertia\Response;
 
 class CustomOrderController extends Controller
 {
@@ -17,20 +19,20 @@ class CustomOrderController extends Controller
         private FurnitureOrderService $service
     ) {}
 
-    public function index(): JsonResponse
+    public function index(): Response
     {
-        return response()->json(
-            CustomOrder::with([
+        return Inertia::render('custom-orders/index', [
+            'orders' => CustomOrder::with([
                 'furnitureModel',
                 'woodType',
                 'finish',
-            ])->latest()->paginate(10)
-        );
+            ])->latest()->paginate(10),
+        ]);
     }
 
-    public function create(): JsonResponse
+    public function create(): Response
     {
-        return response()->json([
+        return Inertia::render('custom-orders/create', [
             'furniture_models' => FurnitureModel::all(),
             'wood_types' => WoodType::all(),
             'finishes' => Finish::all(),
@@ -39,23 +41,25 @@ class CustomOrderController extends Controller
 
     public function store(
         StoreCustomOrderRequest $request
-    ): JsonResponse {
-        $order = $this->service->createOrder(
-            $request->validated()
-        );
+    ): RedirectResponse {
+        $this->service->createOrder($request->validated());
 
-        return response()->json($order, 201);
+        return redirect()
+            ->route('custom-orders.index')
+            ->with('success', 'Custom order created successfully.');
     }
 
     public function update(
         UpdateCustomOrderRequest $request,
         CustomOrder $custom_order
-    ): JsonResponse {
-        $order = $this->service->updateOrder(
+    ): RedirectResponse {
+        $this->service->updateOrder(
             $custom_order,
             $request->validated()
         );
 
-        return response()->json($order);
+        return redirect()
+            ->route('custom-orders.index')
+            ->with('success', 'Custom order updated successfully.');
     }
 }

@@ -1,7 +1,7 @@
 <?php
 
 namespace App\Http\Controllers;
-
+use Inertia\Inertia;
 use App\Http\Requests\StoreFurnitureModelRequest;
 use App\Http\Requests\UpdateFurnitureModelRequest;
 use App\Models\FurnitureModel;
@@ -14,14 +14,14 @@ class FurnitureModelController extends Controller
         private FurnitureOrderService $service
     ) {}
 
-    public function index(): JsonResponse
-    {
-        return response()->json(
-            FurnitureModel::with('customOrders')
-                ->latest()
-                ->paginate(10)
-        );
-    }
+  public function index()
+{
+    return Inertia::render('furniture-models/index', [
+        'furnitureModels' => FurnitureModel::with('customOrders')
+            ->latest()
+            ->paginate(10),
+    ]);
+}
 
     public function create(): JsonResponse
     {
